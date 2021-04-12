@@ -1,112 +1,48 @@
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const bcrypt = require('bcrypt');
-
 const dbConfig = require('../config/db');
 const { Pool } = require('pg');
 const pool = new Pool(dbConfig);
+const bcrypt = require('bcrypt');
+
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 
-/*
-passport.use('local', new LocalStrategy({ passReqToCallback: true }, (req, username, password, done) => {
-
-  loginAttempt();
-  async function loginAttempt() {
-
-    const client = await pool.connect()
-    try {
-      await client.query('BEGIN')
-      var currentAccountsData = await JSON.stringify(client.query('SELECT id, first_name, last_name, email, password FROM customers WHERE username=$1', [username], function (err, result) {
-
+passport.use(new LocalStrategy((username, password, done) => {
+    pool.query(`
+        SELECT * FROM customers
+        WHERE email = $1
+        `, [username], (err, result) => {
         if (err) {
-          return done(err)
+            return done(err);
         }
-        if (result.rows[0] == null) {
-          console.log("Oops. Incorrect login details...");
-          req.flash('danger', "Oops. Incorrect login details.");
-          return done(null, false);
-        }
-        else {
-          bcrypt.compare(password, result.rows[0].password, function (err, check) {
-            if (err) {
-              console.log('Error while checking password');
-              return done();
-            }
-            else if (check) {
-              console.log("User authenticated successfully...");
-              return done(null, [{ id: result.rows[0].id, email: result.rows[0].email, firstName: result.rows[0].firstName }]);
-            }
-            else {
-              console.log("Incorrect login details...");
-              req.flash('danger', "Oops. Incorrect login details.");
-              return done(null, false);
-            }
-          });
-        }
-      }))
-    }
 
-    catch (e) { throw (e); }
-  };
+        //if username doesn't exist in DB, return false
+        if (!result.rows[0]) {
+            return done(null, false);
+        }
 
+        //if passwords match, return the user; otherwise, return false
+        bcrypt.compare(password, result.rows[0].password, (err, check) => {
+            if (check) {
+                return done(null, result.rows[0]);
+            } else {
+                return done(null, false);
+            }
+        })
+    });
 }
-)) */
+));
 
 
-
-
-passport.use('local', new LocalStrategy({ passReqToCallback: true }, async (req, username, password, done) => {
-
-  const client = await pool.connect();
-
-
-
-  await client.query('SELECT id, first_name, last_name, email, password FROM customers WHERE username=$1', [username], function (err, user) {
-
-
-
-    //if username not found:
-    if (user.rows[0] == null) {
-      console.log("Oops. Incorrect login details...");
-      return done(null, false);
-    }
-
-
-
-    //if username found, check password:
-    else {
-      bcrypt.compare(password, user.rows[0].password, function (err, check) {
-        if (check) {
-          console.log("User authenticated successfully...");
-          return done(null, {
-            id: user.rows[0].id,
-            email: user.rows[0].email,
-            firstName: user.rows[0].first_name,
-            lastName: user.rows[0].last_name
-          });
-        }
-        else {
-          console.log("Incorrect login details...");
-          return done(null, false);
-        }
-      });
-    }
-
-
-
-  })
-
-}));
-
-
-passport.serializeUser(function (user, done) {
-  console.log("serialize user is executing");
-  done(null, user);
+//serialize user id in cookie and get the user from DB on further requests, based on id
+passport.serializeUser((user, done) => {
+    done(null, user.id);
 });
 
-
-passport.deserializeUser(function (user, done) {
-  console.log("de-serialize user is executing");
-  done(null, user);
+passport.deserializeUser((id, done) => {
+    pool.query(`
+    SELECT id, email, first_name, last_name, phone FROM customers
+    WHERE id = $1`, [id], (err, result) => {
+        done(err, result.rows[0]);
+    })
 });
-
