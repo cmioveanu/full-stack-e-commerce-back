@@ -12,20 +12,19 @@ const bcrypt = require('bcrypt');
 const checkAuth = require('../utils/checkAuth');
 
 account.post('/register', (req, res) => {
-    const email = req.body.username;
-    const password = req.body.password;
+    const { username, password, firstName, lastName, phone } = req.body;
 
     //if username exists, send 403 unauthorized; if not, create user and add it to the DB
     pool.query(`
     SELECT * FROM customers
-    WHERE email = $1`, [email], (err, result) => {
+    WHERE email = $1`, [username], (err, result) => {
         if (result.rows[0]) {
             res.status(403).send("Username already exists. Please login.");
         } else {
             bcrypt.hash(password, 5, (err, hash) => {
                 pool.query(`
-                INSERT INTO customers (email, password)
-                VALUES ($1, $2)`, [email, hash], (err, result) => {
+                INSERT INTO customers (email, password, first_name, last_name, phone)
+                VALUES ($1, $2, $3, $4, $5)`, [username, hash, firstName, lastName, phone], (err, result) => {
                     if (err) {
                         throw err;
                     }
