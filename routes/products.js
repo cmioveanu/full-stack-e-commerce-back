@@ -7,6 +7,7 @@ const { Pool } = require('pg');
 const pool = new Pool(dbConfig);
 
 
+//get all products
 products.get('/', (req, res) => {
     pool.query('SELECT * FROM Products', (error, results) => {
         if (error) {

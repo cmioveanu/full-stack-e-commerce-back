@@ -19,6 +19,7 @@ function checkAuthentication(req, res, next) {
 }
 
 
+//get list of previous orders
 orders.get('/', checkAuthentication, async (req, res) => {
     const ordersList = [];
     const ids = await pool.query(`SELECT id FROM orders WHERE orders.customer_id = $1 ORDER BY id DESC`, [req.user.id]);
@@ -61,12 +62,7 @@ orders.get('/', checkAuthentication, async (req, res) => {
 });
 
 
-
-
-
-
-
-
+//record a new order in the database
 orders.post('/', (req, res) => {
     const customerId = req.body.customerId;
     const products = req.body.orderProducts;
@@ -102,7 +98,7 @@ orders.post('/', (req, res) => {
 });
 
 
-
+//edit a previous order
 orders.put('/:id', (req, res) => {
     const orderId = req.params.id;
     const status = 'Canceled';
