@@ -16,3 +16,36 @@ products.get('/', (req, res) => {
         res.status(200).json(results.rows);
     })
 });
+
+
+//get sunglasses details
+products.get('/sunglasses/:productId', (req, res) => {
+    const productId = req.params.productId;
+
+    pool.query(`
+    SELECT * FROM sunglasses
+    WHERE product_id = $1
+    `, [productId], (error, results) => {
+        if(error) {
+            throw error;
+        }
+        res.status(200).send(results.rows[0]);
+    });
+});
+
+
+//get watches details
+products.get('/watches/:productId', (req, res) => {
+    const productId = req.params.productId;
+
+    pool.query(`
+    SELECT * FROM watches
+    WHERE product_id = $1
+    `, [productId], (error, results) => {
+        if(error) {
+            throw error;
+        }
+
+        res.status(200).send(results.rows[0]);
+    });
+});
