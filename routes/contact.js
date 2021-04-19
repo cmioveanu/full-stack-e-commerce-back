@@ -8,7 +8,6 @@ const nodeMailer = require('nodemailer');
 
 contact.post('/', (req, res) => {
     const { name, email, message } = req.body;
-    console.log(email);
 
     const transporter = nodeMailer.createTransport({
         host: 'smtp.gmail.com',
