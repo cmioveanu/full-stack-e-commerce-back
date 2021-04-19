@@ -26,7 +26,7 @@ account.post('/register', (req, res) => {
                 INSERT INTO customers (email, password, first_name, last_name, phone)
                 VALUES ($1, $2, $3, $4, $5)`, [username, hash, firstName, lastName, phone], (err, result) => {
                     if (err) {
-                        throw err;
+                        console.log(err);
                     }
                     res.status(201).send("User registered.");
                 });
@@ -61,7 +61,7 @@ account.put('/email', (req, res) => {
     SELECT password FROM customers
     WHERE id = $1`, [req.user.id], (err, result) => {
         if (err) {
-            throw err;
+            console.log(err);
         }
 
         //password from the database
@@ -70,7 +70,7 @@ account.put('/email', (req, res) => {
         //if submitted password and DB password match, update to the new email
         bcrypt.compare(password, DBPassword, (err, check) => {
             if (err) {
-                throw err;
+                console.log(err);
             }
 
             if (check) {
@@ -79,7 +79,7 @@ account.put('/email', (req, res) => {
                 SET email = $1
                 WHERE id = $2`, [newEmail, req.user.id], (err, result) => {
                     if (err) {
-                        throw err;
+                        console.log(err);
                     }
                     res.status(200).send('Email changed.');
                 });
@@ -112,13 +112,13 @@ account.put('/password', (req, res) => {
         //if old password and db password match, update to the new password
         bcrypt.compare(oldPassword, DBPassword, (err, check) => {
             if (err) {
-                throw err;
+                console.log(err);
             }
 
             if (check) {
                 bcrypt.hash(newPassword, 5, (err, hash) => {
                     if (err) {
-                        throw err;
+                        console.log(err);
                     }
 
                     pool.query(`
@@ -127,7 +127,7 @@ account.put('/password', (req, res) => {
                     WHERE id = $2
                     `, [hash, req.user.id], (err, result) => {
                         if (err) {
-                            throw err;
+                            console.log(err);
                         }
                         res.status(200).send("Password changed.");
                     });

@@ -6,10 +6,8 @@ const dbConfig = require('../config/db');
 const { Pool } = require('pg');
 const pool = new Pool(dbConfig);
 
-const passport = require('passport');
 
-function checkAuthentication(req, res, next) {
-    console.log(req.isAuthenticated());
+const checkAuthentication = (req, res, next) => {
     if (req.isAuthenticated()) {
         //req.isAuthenticated() will return true if user is logged in
         next();
@@ -25,7 +23,6 @@ orders.get('/', checkAuthentication, async (req, res) => {
     const ids = await pool.query(`SELECT id FROM orders WHERE orders.customer_id = $1 ORDER BY id DESC`, [req.user.id]);
 
     const idNumbers = ids.rows.map(id => id.id);
-    console.log(idNumbers);
 
     for (let i = 0; i < idNumbers.length; i++) {
         const result = await pool.query(`
@@ -35,8 +32,7 @@ orders.get('/', checkAuthentication, async (req, res) => {
                    orders.created_at,
                    orders.status,
                    products.name,
-                   products.unit_price,
-                   products.img_thumb_path
+                   products.unit_price
             FROM orders_products
             JOIN orders ON orders_products.order_id = orders.id
             JOIN products ON orders_products.product_id = products.id
@@ -76,7 +72,7 @@ orders.post('/', (req, res) => {
 
     pool.query(queryString, [customerId, now, "Pending"], (err, result) => {
         if (err) {
-            throw error;
+            console.log(err);
         } else {
             try {
                 products.forEach(product => {

@@ -9,9 +9,9 @@ const pool = new Pool(dbConfig);
 
 //get all products
 products.get('/', (req, res) => {
-    pool.query('SELECT * FROM Products', (error, results) => {
+    pool.query('SELECT * FROM products', (error, results) => {
         if (error) {
-            throw error;
+            console.log(error);
         }
         res.status(200).json(results.rows);
     })
@@ -27,7 +27,7 @@ products.get('/sunglasses/:productId', (req, res) => {
     WHERE product_id = $1
     `, [productId], (error, results) => {
         if(error) {
-            throw error;
+            console.log(error);
         }
         res.status(200).send(results.rows[0]);
     });
@@ -43,7 +43,7 @@ products.get('/watches/:productId', (req, res) => {
     WHERE product_id = $1
     `, [productId], (error, results) => {
         if(error) {
-            throw error;
+            console.log(error);
         }
 
         res.status(200).send(results.rows[0]);

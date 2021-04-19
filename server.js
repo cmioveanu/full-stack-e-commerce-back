@@ -31,7 +31,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
-  }));
+}));
 
 app.use(require('cookie-parser')());
 
@@ -46,10 +46,12 @@ require('./config/passport');
 const accountRouter = require('./routes/account');
 const productsRouter = require('./routes/products');
 const ordersRouter = require('./routes/orders');
+const contactRouter = require('./routes/contact');
 
 app.use('/api/account', accountRouter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
+app.use('/api/contact', contactRouter);
 
 
 
