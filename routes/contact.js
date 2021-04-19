@@ -8,6 +8,7 @@ const nodeMailer = require('nodemailer');
 
 contact.post('/', (req, res) => {
     const { name, email, message } = req.body;
+    console.log(email);
 
     const transporter = nodeMailer.createTransport({
         host: 'smtp.gmail.com',
@@ -23,7 +24,7 @@ contact.post('/', (req, res) => {
         // should be replaced with real recipient's account
         from: email,
         to: process.env.EMAIL,
-        subject: `New email from ${name}`,
+        subject: `New email from ${name} - ${email}`,
         text: message
     };
 
