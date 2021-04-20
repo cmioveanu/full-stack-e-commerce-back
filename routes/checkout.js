@@ -27,8 +27,8 @@ checkout.post('/', async (req, res) => {
                 }
             ],
             mode: 'payment',
-            success_url: 'http://localhost:3000?sucess=true',
-            cancel_url: 'http://localhost:3000?canceled=true'
+            success_url: 'http://localhost:3000/account?success=true',
+            cancel_url: 'http://localhost:3000/account?canceled=true'
         });
 
         res.json({
