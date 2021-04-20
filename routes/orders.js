@@ -94,16 +94,65 @@ orders.post('/', (req, res) => {
 });
 
 
-//edit a previous order
+//cancel a previous order
 orders.put('/:id', (req, res) => {
     const orderId = req.params.id;
-    const status = 'Canceled';
     const queryString = `
         UPDATE Orders
-        SET status = $2
+        SET status = 'Canceled'
         WHERE id = $1
-        RETURNING *
         `;
-    pool.query(queryString, [orderId, status]);
+    pool.query(queryString, [orderId]);
     res.status(200).send("Updated successfuly!");
+});
+
+
+//update status to paid for last order
+orders.get('/paid', (req, res) => {
+    pool.query(`SELECT id FROM orders ORDER BY id DESC LIMIT 1`, (error, result) => {
+        if (error) {
+            console.error('Can\'t select from orders by id', error);
+        }
+
+        const orderId = result.rows[0].id;
+
+        pool.query("UPDATE orders SET status = 'Paid' WHERE id = $1", [orderId], (err, results) => {
+            if (err) {
+                console.error('Error updating order to Paid', err);
+            }
+
+            res.status(200).send('Status updated to paid for last order.');
+        })
+    })
+})
+
+
+//cancel order
+orders.delete('/delete', (req, res) => {
+    pool.query(`SELECT id FROM orders ORDER BY id DESC LIMIT 1`, (error, result) => {
+        if (error) {
+            console.error(error);
+        }
+
+        //set the order id
+        const orderId = result.rows[0].id;
+
+        //delete the orders_products then the order
+        pool.query(`
+        DELETE FROM orders_products WHERE order_id = $1
+        `, [orderId], (error, result) => {
+            if (error) {
+                console.error('Could not delete from orders_products', error);
+            }
+
+            //delete the order
+            pool.query(`DELETE from orders WHERE id = $1`, [orderId], (error, result) => {
+                if (error) {
+                    console.error('Could not delete from orders.', error);
+                }
+
+                res.status(200).send('Order deleted.');
+            })
+        })
+    });
 });
