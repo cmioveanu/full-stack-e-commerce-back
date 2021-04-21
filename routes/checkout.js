@@ -7,10 +7,12 @@ const dbConfig = require('../config/db');
 const { Pool } = require('pg');
 const pool = new Pool(dbConfig);
 
+const checkAuth = require('../utils/checkAuth');
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
 
-checkout.post('/', async (req, res) => {
+checkout.post('/', checkAuth, async (req, res) => {
     const { products, productIds } = req.body;
 
     //insert the new order into database
@@ -25,7 +27,7 @@ checkout.post('/', async (req, res) => {
         VALUES($1, current_timestamp, $2)
         `, [req.user.id, 'Pending'], (error, result) => {
             if (error) {
-                console.error(error);
+                console.error('Unable to create order', error);
             }
         });
 
@@ -47,7 +49,7 @@ checkout.post('/', async (req, res) => {
                 VALUES($1, $2, $3)
                 `, [orderId, product.id, product.quantity], (error, result) => {
                     if (error) {
-                        console.error(error);
+                        console.error('Unable to insert products into products_orders', error);
                     }
                 });
             });
@@ -76,6 +78,6 @@ checkout.post('/', async (req, res) => {
         })
     }
     catch (err) {
-        console.log(err);
+        console.error('Unable to create stripe session', err);
     }
 });

@@ -6,19 +6,11 @@ const dbConfig = require('../config/db');
 const { Pool } = require('pg');
 const pool = new Pool(dbConfig);
 
-
-const checkAuthentication = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        //req.isAuthenticated() will return true if user is logged in
-        next();
-    } else {
-        res.redirect("/login");
-    }
-}
+const checkAuth = require('../utils/checkAuth');
 
 
 //get list of previous orders
-orders.get('/', checkAuthentication, async (req, res) => {
+orders.get('/', checkAuth, async (req, res) => {
     const ordersList = [];
     const ids = await pool.query(`SELECT id FROM orders WHERE orders.customer_id = $1 ORDER BY id DESC`, [req.user.id]);
 
@@ -59,7 +51,7 @@ orders.get('/', checkAuthentication, async (req, res) => {
 
 
 //record a new order in the database
-orders.post('/', (req, res) => {
+orders.post('/', checkAuth, (req, res) => {
     const customerId = req.body.customerId;
     const products = req.body.orderProducts;
 
@@ -72,7 +64,7 @@ orders.post('/', (req, res) => {
 
     pool.query(queryString, [customerId, now, "Pending"], (err, result) => {
         if (err) {
-            console.log(err);
+            console.error('Unable to create new order', err);
         } else {
             try {
                 products.forEach(product => {
@@ -84,7 +76,7 @@ orders.post('/', (req, res) => {
                     pool.query(productString, [result.rows[0].id, product.id, product.quantity * product.price, product.quantity]);
                 });
             } catch (error) {
-                console.log(error);
+                console.error('Unable to insert into orders_products', error);
             }
 
             res.status(201).send("Order created!");
@@ -95,30 +87,34 @@ orders.post('/', (req, res) => {
 
 
 //cancel a previous order
-orders.put('/:id', (req, res) => {
+orders.put('/:id', checkAuth, (req, res) => {
     const orderId = req.params.id;
-    const queryString = `
+
+    pool.query(`
         UPDATE Orders
         SET status = 'Canceled'
         WHERE id = $1
-        `;
-    pool.query(queryString, [orderId]);
-    res.status(200).send("Updated successfuly!");
+        `, [orderId], (err, result) => {
+            if(err) {
+                console.error('Unable to update order status to canceled', err);
+            }
+        res.status(200).send("Updated successfuly!");
+    });
 });
 
 
 //update status to paid for last order
-orders.get('/paid', (req, res) => {
+orders.get('/paid', checkAuth, (req, res) => {
     pool.query(`SELECT id FROM orders ORDER BY id DESC LIMIT 1`, (error, result) => {
         if (error) {
-            console.error('Can\'t select from orders by id', error);
+            console.error('Unable to select from orders by id', error);
         }
 
         const orderId = result.rows[0].id;
 
         pool.query("UPDATE orders SET status = 'Paid' WHERE id = $1", [orderId], (err, results) => {
             if (err) {
-                console.error('Error updating order to Paid', err);
+                console.error('Unable to update order to Paid', err);
             }
 
             res.status(200).send('Status updated to paid for last order.');
@@ -128,10 +124,10 @@ orders.get('/paid', (req, res) => {
 
 
 //cancel order
-orders.delete('/delete', (req, res) => {
+orders.delete('/delete', checkAuth, (req, res) => {
     pool.query(`SELECT id FROM orders ORDER BY id DESC LIMIT 1`, (error, result) => {
         if (error) {
-            console.error(error);
+            console.error('Unable to select last order id', error);
         }
 
         //set the order id
@@ -142,13 +138,13 @@ orders.delete('/delete', (req, res) => {
         DELETE FROM orders_products WHERE order_id = $1
         `, [orderId], (error, result) => {
             if (error) {
-                console.error('Could not delete from orders_products', error);
+                console.error('Unable to delete from orders_products', error);
             }
 
             //delete the order
             pool.query(`DELETE from orders WHERE id = $1`, [orderId], (error, result) => {
                 if (error) {
-                    console.error('Could not delete from orders.', error);
+                    console.error('Unable to delete from orders.', error);
                 }
 
                 res.status(200).send('Order deleted.');

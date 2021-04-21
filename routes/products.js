@@ -11,7 +11,7 @@ const pool = new Pool(dbConfig);
 products.get('/', (req, res) => {
     pool.query('SELECT * FROM products', (error, results) => {
         if (error) {
-            console.log(error);
+            console.error('Unable to select products', error);
         }
         res.status(200).json(results.rows);
     })
@@ -27,7 +27,7 @@ products.get('/sunglasses/:productId', (req, res) => {
     WHERE product_id = $1
     `, [productId], (error, results) => {
         if(error) {
-            console.log(error);
+            console.error('Unable to select sunglasses', error);
         }
         res.status(200).send(results.rows[0]);
     });
@@ -43,7 +43,7 @@ products.get('/watches/:productId', (req, res) => {
     WHERE product_id = $1
     `, [productId], (error, results) => {
         if(error) {
-            console.log(error);
+            console.error('Unable to select watches', error);
         }
 
         res.status(200).send(results.rows[0]);

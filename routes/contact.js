@@ -29,7 +29,7 @@ contact.post('/', (req, res) => {
 
     transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-            return console.log(error);
+            return console.error('Unable to send mail', error);
         }
         console.log(`Email message sent to ${info.accepted[0]}`);
         res.status(200).send('Email message sent!');
