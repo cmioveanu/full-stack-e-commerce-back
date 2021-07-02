@@ -4,7 +4,10 @@ module.exports = products;
 
 const dbConfig = require('../config/db');
 const { Pool } = require('pg');
-const pool = new Pool(dbConfig);
+const pool = new Pool({
+    connectionStirng: dbConfig,
+    ssl: { rejectUnauthorized: false }
+});
 
 
 //get all products
