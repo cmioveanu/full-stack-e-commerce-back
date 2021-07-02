@@ -5,7 +5,7 @@ module.exports = orders;
 const dbConfig = require('../config/db');
 const { Pool } = require('pg');
 const pool = new Pool({
-    connectionStirng: dbConfig,
+    connectionString: dbConfig,
     ssl: { rejectUnauthorized: false }
 });
 
