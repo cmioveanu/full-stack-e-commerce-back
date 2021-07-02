@@ -6,7 +6,8 @@ const dbConfig = {
     password: process.env.DB_PASS,
     host:     process.env.DB_HOST,
     database: process.env.DB,
-    port:     process.env.DB_PORT
+    port:     process.env.DB_PORT,
+    rejectUnauthorized: false
 };
 
 module.exports = dbConfig;
