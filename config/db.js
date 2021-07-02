@@ -1,7 +1,7 @@
 const path = require('path');
 require('dotenv').config({path: '../.env'});
 
-/*
+
 const dbConfig = {
     user:     process.env.DB_USER,
     password: process.env.DB_PASS,
@@ -9,7 +9,5 @@ const dbConfig = {
     database: process.env.DB,
     port:     process.env.DB_PORT
 };
-*/
 
-const connectionString = process.env.DATABASE_URL;
-module.exports = connectionString;
+module.exports = dbConfig;
