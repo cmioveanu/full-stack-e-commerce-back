@@ -68,8 +68,8 @@ checkout.post('/', checkAuth, async (req, res) => {
             payment_method_types: ['card'],
             line_items: products,
             mode: 'payment',
-            success_url: 'http://localhost:3000/account?success=true',
-            cancel_url: 'http://localhost:3000/account?canceled=true'
+            success_url: 'https://wooden-watches.herokuapp.com/account?success=true',
+            cancel_url: 'https://wooden-watches.herokuapp.com/account?canceled=true'
         });
 
         //send back the session id
